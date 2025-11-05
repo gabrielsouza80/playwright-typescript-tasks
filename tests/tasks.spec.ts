@@ -4,12 +4,10 @@ import { faker } from '@faker-js/faker';
 import { TaskModel } from './fixtures/task.model';
 import { deleteTaskByHelper, postTask } from './support/helpers';
 import { TasksPage } from './support/pages/tasks';
+import data from './fixtures/tasks.json' assert { type: 'json' };
 
 test('Deve poder cadastrar uma nova tarefa', async ({ page, request }) => {
-    const task: TaskModel = {
-        name: 'Ler um livro de TypeScript',
-        is_done: false
-    }
+    const task = data.sucess as TaskModel;
 
     await deleteTaskByHelper(request, task.name);
 
@@ -18,15 +16,11 @@ test('Deve poder cadastrar uma nova tarefa', async ({ page, request }) => {
     await tasksPage.go()
     await tasksPage.create(task)
     await tasksPage.shouldHaveText(task.name)
-
 })
 
 
 test('Não deve permitir tarefa duplicada', async ({ page, request }) => {
-    const task: TaskModel = {
-        "name": "Comprar Ketchup",
-        "is_done": false
-    }
+    const task = data.duplicate as TaskModel;
 
     await deleteTaskByHelper(request, task.name);
     await postTask(request, task);
@@ -38,18 +32,14 @@ test('Não deve permitir tarefa duplicada', async ({ page, request }) => {
     await tasksPage.alertHaveText('Task already exists!')
 })
 
-test.only('Deve validar o campo obrigatorio', async ({ page }) => {
-    const task: TaskModel = {
-        name: '',
-        is_done: false
-    }
+test('Deve validar o campo obrigatorio', async ({ page }) => {
+    const task = data.required as TaskModel;
 
     const tasksPage: TasksPage = new TasksPage(page);
 
     await tasksPage.go()
     await tasksPage.create(task)
     
-    const iptTaskNome = page.locator('input[class*="InputNewTask"]')
-    const validationMessage = await iptTaskNome.evaluate(e => (e as HTMLInputElement).validationMessage)
+    const validationMessage = await tasksPage.iptTaskName.evaluate(e => (e as HTMLInputElement).validationMessage)
     expect(validationMessage).toEqual('This is a required field')
 })
