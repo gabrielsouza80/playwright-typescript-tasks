@@ -28,4 +28,3 @@ jobs:
 
       - name: Run Playwright tests
         run: yarn test
-            
