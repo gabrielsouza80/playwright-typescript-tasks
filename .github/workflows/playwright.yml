@@ -6,12 +6,17 @@ on:
   pull_request:
     branches: [ main, master ]
 
+env:
+  BASE_URL: http://localhost:3333
+  CI: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         browser: [chromium, firefox]
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,6 +33,12 @@ jobs:
       - name: Install Playwright Browsers
         run: yarn playwright install --with-deps
 
+      - name: Start backend
+        run: yarn start &
+
+      - name: Wait for backend to be ready
+        run: npx wait-on http://localhost:3333
+
       - name: Run Playwright tests
         run: yarn test --project=${{ matrix.browser }}
 
@@ -37,5 +48,3 @@ jobs:
         with:
           name: playwright-report-${{ matrix.browser }}
           path: playwright-report/
-
-
